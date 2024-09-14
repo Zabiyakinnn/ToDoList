@@ -13,7 +13,7 @@ struct Todo: Codable {
 
 struct Todos: Codable {
     var id: Int?
-    var description: String?
+    var comment: String?
     var todo: String?
     var completed: Bool?
     var userId: Int?

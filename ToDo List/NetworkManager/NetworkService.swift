@@ -27,7 +27,7 @@ public final class NetworkService {
                 print("No data returned")
                 return
             }
-              do {
+            do {
                 // Декодируем ответ в структуру Todo
                 let toDoData = try JSONDecoder().decode(Todo.self, from: data)
                 // Если получили данные, вызываем completion с массивом Todos

@@ -79,7 +79,7 @@ class TaskCell: UICollectionViewCell {
     
     func configure(_ todoItem: Todos) {
         toDoLabel.text = todoItem.todo
-        commentLabel.text = todoItem.description ?? "Your comment"
+        commentLabel.text = todoItem.comment ?? "Your comment"
         createdToDoLabel.text = "Data"
         statusButton.isSelected = todoItem.completed ?? false
     }

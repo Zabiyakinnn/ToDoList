@@ -18,6 +18,12 @@ class MainViewController: UIViewController {
     let itemsSegment = ["All", "Open", "Closed"]
     private var selectedTab: String = "All" // Хранение текущей выбранной вкладки
     
+    private lazy var seperatorLine: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.lightGray.withAlphaComponent(0.5)
+        return view
+    }()
+    
     private lazy var collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
@@ -116,12 +122,12 @@ class MainViewController: UIViewController {
         
         let titleLabel = UILabel()
         titleLabel.text = title
-        titleLabel.font = UIFont.systemFont(ofSize: 16, weight: isSelected ? .bold : .regular)
+        titleLabel.font = UIFont.systemFont(ofSize: 16, weight: isSelected ? .bold : .semibold)
         titleLabel.textColor = isSelected ? .systemBlue : .gray
         
         let countLabel = UILabel()
         countLabel.text = "\(count)"
-        countLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
+        countLabel.font = UIFont.systemFont(ofSize: 15, weight: .semibold)
         countLabel.textColor = isSelected ? .systemBlue : .gray
         
         tabView.addArrangedSubview(titleLabel)
@@ -151,6 +157,7 @@ class MainViewController: UIViewController {
         // Очищаем старые вкладки и добавляем новые
         tabsStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         tabsStackView.addArrangedSubview(allTab)
+        tabsStackView.addArrangedSubview(seperatorLine)
         tabsStackView.addArrangedSubview(openTab)
         tabsStackView.addArrangedSubview(closedTab)
     }
@@ -246,13 +253,17 @@ private extension MainViewController {
             make.top.equalTo(labelData.snp.top).offset(30)
             make.left.equalTo(view.snp.left).inset(30)
             make.height.equalTo(40)
-            make.width.equalTo(220)
+            make.width.equalTo(260)
         }
         collectionView.snp.makeConstraints { make in
             make.top.equalTo(tabsStackView.snp.top).offset(40)
             make.left.equalTo(view.snp.left).offset(20)
             make.right.equalTo(view.snp.right).offset(-20)
             make.bottom.equalToSuperview()
+        }
+        seperatorLine.snp.makeConstraints { make in
+            make.width.equalTo(1.5)
+            make.height.equalTo(20)
         }
     }
 }
