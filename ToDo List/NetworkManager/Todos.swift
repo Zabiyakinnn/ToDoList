@@ -6,3 +6,15 @@
 //
 
 import Foundation
+
+struct Todo: Codable {
+    var todos: [Todos]?
+}
+
+struct Todos: Codable {
+    var id: Int?
+    var description: String?
+    var todo: String?
+    var completed: Bool?
+    var userId: Int?
+}
