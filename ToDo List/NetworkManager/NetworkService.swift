@@ -32,8 +32,11 @@ public final class NetworkService {
                 let toDoData = try JSONDecoder().decode(Todo.self, from: data)
                 // Если получили данные, вызываем completion с массивом Todos
                 if let todos = toDoData.todos {
-                    print(todos)  // Для отладки
                     completion(todos)
+//                    DispatchQueue.main.async {
+//                        CoreDataManager.shared.saveList(from: toDoData)
+//                        print("todoData ----- \(toDoData)")
+//                    }
                 } else {
                     print("No todos in response")
                 }

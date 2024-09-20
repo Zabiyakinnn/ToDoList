@@ -10,6 +10,8 @@ import SnapKit
 
 class NewTaskViewController: UIViewController {
     
+    var todoListInstance: ToDoList?
+    
     private lazy var todoTextField: UITextField = {
         let textField = UITextField()
         textField.borderStyle = .roundedRect
@@ -54,7 +56,7 @@ class NewTaskViewController: UIViewController {
         button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
         button.backgroundColor = UIColor(red: 230/255, green: 240/255, blue: 255/255, alpha: 1)
         button.layer.cornerRadius = 14
-        button.addTarget(self, action: #selector(setDateOfBithd), for: .touchUpInside)
+        button.addTarget(self, action: #selector(setDateOfTask), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -87,33 +89,10 @@ class NewTaskViewController: UIViewController {
         button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
         button.backgroundColor = UIColor(red: 230/255, green: 240/255, blue: 255/255, alpha: 1)
         button.layer.cornerRadius = 14
-//        button.addTarget(self, action: #selector(tappedNewTask), for: .touchUpInside)
+        button.addTarget(self, action: #selector(saveToDoList), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-    
-    @objc func setDateOfBithd() {
-        let vc = UIViewController()
-        vc.preferredContentSize = CGSize(width: 250,height: 50)
-        let pickerView = UIDatePicker(frame: CGRect(x: 0, y: 0, width: 250, height: 50))
-        pickerView.datePickerMode = .date
-        vc.view.addSubview(pickerView)
-        pickerView.snp.makeConstraints { make in
-            make.center.equalTo(vc.view.snp.center)
-        }
-        pickerView.addTarget(self, action: #selector(updateDateOfBithd(sender: )), for: .valueChanged)
-        let DateAlert = UIAlertController(title: "Select the date of completion of the task", message: "", preferredStyle: .alert)
-        DateAlert.setValue(vc, forKey: "contentViewController")
-        DateAlert.addAction(UIAlertAction(title: "Done", style: .default, handler: nil))
-        updateDateOfBithd(sender: pickerView)
-        present(DateAlert, animated: true)
-    }
-    
-    @objc func updateDateOfBithd(sender: UIDatePicker) {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd-MM-yyyy"
-        dateOfDone.text = formatter.string(from: sender.date)
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -131,6 +110,63 @@ class NewTaskViewController: UIViewController {
         view.addSubview(dateOfDone)
         view.addSubview(taskCompletionDate)
         view.addSubview(setDateOfDone)
+    }
+    
+    @objc func setDateOfTask() {
+        let vc = UIViewController()
+        vc.preferredContentSize = CGSize(width: 250,height: 50)
+        let pickerView = UIDatePicker(frame: CGRect(x: 0, y: 0, width: 250, height: 50))
+        pickerView.datePickerMode = .date
+        vc.view.addSubview(pickerView)
+        pickerView.snp.makeConstraints { make in
+            make.center.equalTo(vc.view.snp.center)
+        }
+        pickerView.addTarget(self, action: #selector(updateDateOfToDo(sender: )), for: .valueChanged)
+        let DateAlert = UIAlertController(title: "Select the date of completion of the task", message: "", preferredStyle: .alert)
+        DateAlert.setValue(vc, forKey: "contentViewController")
+        DateAlert.addAction(UIAlertAction(title: "Done", style: .default, handler: nil))
+        updateDateOfToDo(sender: pickerView)
+        present(DateAlert, animated: true)
+    }
+    
+    @objc func updateDateOfToDo(sender: UIDatePicker) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd-MM-yyyy"
+        let selectedDate = dateFormatter.string(from: sender.date)
+        dateOfDone.text = selectedDate
+    }
+    
+    @objc func saveToDoList() {
+        if todoTextField.hasText && commentTextField.hasText && dateOfDone.text != "dd-MM-yyyy" {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd-MM-yyyy"
+
+            // Проверяем, если todoListInstance == nil, создаем новый объект
+            // Получаем контекст ManagedObjectContext
+            let appDelegate = UIApplication.shared.delegate as! AppDelegate
+            let context = appDelegate.persistentContainer.viewContext
+                
+            // Создаем новый объект ToDoList
+            if todoListInstance == nil {
+                todoListInstance = ToDoList(context: context)
+            }
+            
+            todoListInstance?.todo = todoTextField.text
+            todoListInstance?.comment = commentTextField.text
+            todoListInstance?.date = formatter.date(from: dateOfDone.text ?? "01-01-2024")
+            todoListInstance?.completed = false
+            
+            // Сохраняем данные в Core Data
+            do {
+                try todoListInstance?.managedObjectContext?.save()
+                dismiss(animated: true)
+                print("Данные сохранены в coreData ----- \(String(describing: todoListInstance))")
+            } catch {
+                print("Ошибка при сохранении данных в Core Data: \(error)")
+            }
+        } else {
+            print("Ошибка сохранения задачи в CoreData")
+        }
     }
 }
 

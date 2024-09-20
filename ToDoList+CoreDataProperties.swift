@@ -10,9 +10,7 @@ import Foundation
 import CoreData
 
 @objc(ToDoList)
-public class ToDoList: NSManagedObject {
-
-}
+public class ToDoList: NSManagedObject {}
 
 extension ToDoList {
 
@@ -27,6 +25,4 @@ extension ToDoList {
 
 }
 
-extension ToDoList : Identifiable {
-
-}
+extension ToDoList : Identifiable {}

@@ -64,6 +64,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		C28125052C97239900521AD4 /* MainVC */ = {
+			isa = PBXGroup;
+			children = (
+				C2C34E392C932FEE002DA5CD /* MainViewController.swift */,
+				C2D5CF672C94653B00A22B5C /* TaskCell.swift */,
+			);
+			path = MainVC;
+			sourceTree = "<group>";
+		};
 		C288D69A239BB91BB5C4EC5C /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -96,11 +105,10 @@
 			children = (
 				C2D5CF6F2C95D6F000A22B5C /* ModelCoreData */,
 				C2D5CF552C93371F00A22B5C /* NetworkManager */,
+				C28125052C97239900521AD4 /* MainVC */,
+				C2D5CF692C95804000A22B5C /* NewTaskViewController.swift */,
 				C2C34E352C932FEE002DA5CD /* AppDelegate.swift */,
 				C2C34E372C932FEE002DA5CD /* SceneDelegate.swift */,
-				C2C34E392C932FEE002DA5CD /* MainViewController.swift */,
-				C2D5CF692C95804000A22B5C /* NewTaskViewController.swift */,
-				C2D5CF672C94653B00A22B5C /* TaskCell.swift */,
 				C2C34E3E2C932FF3002DA5CD /* Assets.xcassets */,
 				C2C34E402C932FF3002DA5CD /* LaunchScreen.storyboard */,
 				C2C34E432C932FF3002DA5CD /* Info.plist */,

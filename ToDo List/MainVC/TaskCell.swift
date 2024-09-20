@@ -80,7 +80,9 @@ class TaskCell: UICollectionViewCell {
     func configure(_ todoItem: Todos) {
         toDoLabel.text = todoItem.todo
         commentLabel.text = todoItem.comment ?? "Your comment"
-        createdToDoLabel.text = "Data"
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd-MM-yyyy"
+        createdToDoLabel.text = formatter.string(from: todoItem.date ?? Date())
         statusButton.isSelected = todoItem.completed ?? false
     }
     

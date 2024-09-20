@@ -16,5 +16,6 @@ struct Todos: Codable {
     var comment: String?
     var todo: String?
     var completed: Bool?
+    var date: Date?
     var userId: Int?
 }
