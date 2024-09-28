@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		5496B8936B6975C87A79BE72 /* Pods_ToDo_List.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09CF51DB024A56195F088326 /* Pods_ToDo_List.framework */; };
+		C24000F02CA80DAA00FCFB86 /* EditTaskViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C24000EF2CA80DAA00FCFB86 /* EditTaskViewController.swift */; };
 		C2C34E362C932FEE002DA5CD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C34E352C932FEE002DA5CD /* AppDelegate.swift */; };
 		C2C34E382C932FEE002DA5CD /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C34E372C932FEE002DA5CD /* SceneDelegate.swift */; };
 		C2C34E3A2C932FEE002DA5CD /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C34E392C932FEE002DA5CD /* MainViewController.swift */; };
@@ -26,6 +27,7 @@
 /* Begin PBXFileReference section */
 		09CF51DB024A56195F088326 /* Pods_ToDo_List.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ToDo_List.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		1D7609D55F31A8C1CAA07A80 /* Pods-ToDo List.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ToDo List.release.xcconfig"; path = "Target Support Files/Pods-ToDo List/Pods-ToDo List.release.xcconfig"; sourceTree = "<group>"; };
+		C24000EF2CA80DAA00FCFB86 /* EditTaskViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditTaskViewController.swift; sourceTree = "<group>"; };
 		C2C34E322C932FEE002DA5CD /* ToDo List.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ToDo List.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2C34E352C932FEE002DA5CD /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C2C34E372C932FEE002DA5CD /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -107,6 +109,7 @@
 				C2D5CF552C93371F00A22B5C /* NetworkManager */,
 				C28125052C97239900521AD4 /* MainVC */,
 				C2D5CF692C95804000A22B5C /* NewTaskViewController.swift */,
+				C24000EF2CA80DAA00FCFB86 /* EditTaskViewController.swift */,
 				C2C34E352C932FEE002DA5CD /* AppDelegate.swift */,
 				C2C34E372C932FEE002DA5CD /* SceneDelegate.swift */,
 				C2C34E3E2C932FF3002DA5CD /* Assets.xcassets */,
@@ -251,6 +254,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C24000F02CA80DAA00FCFB86 /* EditTaskViewController.swift in Sources */,
 				C2C34E3A2C932FEE002DA5CD /* MainViewController.swift in Sources */,
 				C2D5CF682C94653B00A22B5C /* TaskCell.swift in Sources */,
 				C2D5CF6A2C95804000A22B5C /* NewTaskViewController.swift in Sources */,

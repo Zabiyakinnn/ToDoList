@@ -14,9 +14,7 @@ public final class NetworkService {
     // Запрос на получение списка задач
     func requestToDoList(completion: @escaping ([Todos]) -> Void) {
         guard let url = URL(string: "https://dummyjson.com/todos") else { return }
-        
         let request = URLRequest(url: url)
-        
         // Парсим данные
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
@@ -33,10 +31,6 @@ public final class NetworkService {
                 // Если получили данные, вызываем completion с массивом Todos
                 if let todos = toDoData.todos {
                     completion(todos)
-//                    DispatchQueue.main.async {
-//                        CoreDataManager.shared.saveList(from: toDoData)
-//                        print("todoData ----- \(toDoData)")
-//                    }
                 } else {
                     print("No todos in response")
                 }

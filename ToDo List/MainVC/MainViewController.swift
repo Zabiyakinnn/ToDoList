@@ -11,27 +11,15 @@ import CoreData
 
 class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
     
-    private var toDoListData: Todo?
     private var filteredTasks: [Todos] = []
-    var todoList: ToDoList?
+    var todoList: [ToDoList] = []
     var taskCell = "taskCell"
     let currentData = Date()
     let dateFormatter = DateFormatter()
     let itemsSegment = ["All", "Open", "Closed"]
     private var selectedTab: String = "All" // Хранение текущей выбранной вкладки
     
-    lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "ToDoList")
-        container.loadPersistentStores { description, error in
-            if let error = error as NSError? {
-                print("Error loading persistent store: \(error.localizedDescription)")
-                print("Details: \(error), \(error.userInfo)")
-            } else {
-                print("DB url - \(description.url?.absoluteString ?? "")")
-            }
-        }
-        return container
-    }()
+    //    MARK: - Core Data
     
     private lazy var fetchResultontroller: NSFetchedResultsController<ToDoList> = {
         let fetchRequest = ToDoList.fetchRequest()
@@ -47,7 +35,59 @@ class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
         return fetchResultController
     }()
     
+    lazy var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: "ToDoList")
+        container.loadPersistentStores { description, error in
+            if let error = error as NSError? {
+                print("Error loading persistent store: \(error.localizedDescription)")
+                print("Details: \(error), \(error.userInfo)")
+            } else {
+                print("DB url - \(description.url?.absoluteString ?? "")")
+            }
+        }
+        return container
+    }()
     
+    private func deleteTaskFromCoreData(todoItem: Todos) {
+        let context = persistentContainer.viewContext
+        let fetchRequest: NSFetchRequest<ToDoList> = ToDoList.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "todo == %@", todoItem.todo ?? "")
+        
+        do {
+            let results = try context.fetch(fetchRequest)
+            if let taskToDelete = results.first {
+                context.delete(taskToDelete)
+                try context.save()
+            }
+        } catch {
+            print("Ошибка при удалении задачи из Core Data: \(error)")
+        }
+    }
+    
+    private func updateTaskStatus(at indexPath: IndexPath, newStatus: Bool) {
+        var
+        task = filteredTasks[indexPath.row]
+        task.completed = newStatus
+        
+        let context = persistentContainer.viewContext
+        let fetchRequest: NSFetchRequest<ToDoList> = ToDoList.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "todo == %@", task.todo ?? "")
+        
+        do {
+            let result = try context.fetch(fetchRequest)
+            if let taskToUpdate = result.first {
+                taskToUpdate.completed = newStatus
+                try context.save()
+                print("Статус задачи обновлен и сохранен в CoreData")
+            }
+        } catch {
+            print("Ошибка сохранения статуса в CoreData \(error)")
+        }
+        collectionView.reloadItems(at: [indexPath])
+    }
+    
+    
+    //    MARK: - View
     private lazy var seperatorLine: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor.lightGray.withAlphaComponent(0.5)
@@ -118,6 +158,7 @@ class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
         return stackView
     }()
     
+    //    MARK: - ViewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
         try? fetchResultontroller.performFetch()
@@ -133,20 +174,18 @@ class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
         navigationController?.setNavigationBarHidden(true, animated: true)
     }
     
+    
+    //    MARK: - Request
     private func request() {
-        NetworkService.shared.requestToDoList { [weak self] todos in
-            guard let self = self else { return }
-            self.toDoListData = Todo(todos: todos)
-            self.saveTodosToCoreData(todos: todos)
-            DispatchQueue.main.async {
-                self.setupTabs()
-                self.updateDataForSelectedTab()
-                self.collectionView.reloadData()
-            }
+        DispatchQueue.main.async {
+            self.setupTabs()
+            self.updateDataForSelectedTab()
+            self.collectionView.reloadData()
         }
     }
     
-//    Сохранение данных в Core Data
+    //    MARK: - Methods
+    //    Сохранение данных в Core Data
     private func saveTodosToCoreData(todos: [Todos]) {
         let context = persistentContainer.viewContext
         
@@ -157,7 +196,7 @@ class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
             do {
                 let results = try context.fetch(fetchRequest)
                 if results.isEmpty {
-//                    если задачи не существует в Core Data создаем новую запись
+                    //                    если задачи не существует в Core Data создаем новую запись
                     let newTask = ToDoList(context: context)
                     newTask.todo = todoItem.todo
                     newTask.comment = todoItem.comment
@@ -171,8 +210,8 @@ class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
             }
         }
     }
-
-    //    функция сооздания вкладок
+    
+    //    метод сооздания вкладок
     func createTab(title: String, count: Int, isSelected: Bool) -> UIView {
         let tabView = UIStackView()
         tabView.axis = .horizontal
@@ -203,12 +242,13 @@ class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
     
     //    настройка вкладок и добавлие в stackView
     private func setupTabs() {
+        self.todoList = fetchResultontroller.fetchedObjects ?? []
         // общее количество задач
-        let allCount = toDoListData?.todos?.count ?? 0
+        let allCount = todoList.count
         // Фильтруем задачи на незавершенные (Open)
-        let openCount = toDoListData?.todos?.filter { $0.completed == false }.count ?? 0
+        let openCount = todoList.filter { $0.completed == false }.count
         // Фильтруем задачи на завершенные (Closed)
-        let closedCount = toDoListData?.todos?.filter { $0.completed == true }.count ?? 0
+        let closedCount = todoList.filter { $0.completed == true }.count
         // вкладки с реальными значениями
         let allTab = createTab(title: "All", count: allCount, isSelected: selectedTab == "All")
         let openTab = createTab(title: "Open", count: openCount, isSelected: selectedTab == "Open")
@@ -249,23 +289,19 @@ class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
         }
         
         var combineTask: [Todos] = []
-//        Добавляем задачи из сети
-        if let todos = toDoListData?.todos {
-            combineTask.append(contentsOf: todos)
-        }
-//        Добавляем задачи из Core Data если их нет в сетевых данных
+//        Задачи из CoreData
         for coreTask in coreDataTask {
             if !(combineTask.contains { $0.todo == coreTask.todo }) {
                 let task = Todos(
-                    comment: coreTask.comment ?? "",
-                    todo: coreTask.todo ?? "",
+                    comment: coreTask.comment ?? "You comment",
+                    todo: coreTask.todo ?? "You task",
                     completed: coreTask.completed,
                     date: coreTask.date
                 )
                 combineTask.append(task)
             }
         }
-
+        
         switch selectedTab {
         case "All":
             filteredTasks = combineTask
@@ -281,12 +317,17 @@ class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
     
     @objc func tappedNewTask() {
         let newTaskVC = NewTaskViewController()
-        newTaskVC.todoListInstance = ToDoList.init(entity: NSEntityDescription.entity(forEntityName: "ToDoList", in: persistentContainer.viewContext)!, insertInto: persistentContainer.viewContext)
+        newTaskVC.newToDo = { [weak self] in
+            guard let self = self else { return }
+            self.updateDataForSelectedTab()
+            self.updateTabs()
+        }
         navigationController?.present(newTaskVC, animated: true)
     }
 }
 
-extension MainViewController: UICollectionViewDataSource {
+//MARK: - UICollectionViewDataSource, UICollectionViewDelegate
+extension MainViewController: UICollectionViewDataSource, UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return filteredTasks.count
@@ -296,19 +337,38 @@ extension MainViewController: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: taskCell, for: indexPath) as! TaskCell
         let item = filteredTasks[indexPath.row]
         cell.configure(item)
+        
+        cell.onStatusChange = { [weak self] newStatus in
+            guard let self = self else { return }
+            self.updateTaskStatus(at: indexPath, newStatus: newStatus)
+        }
         return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let editTaskVC = EditTaskViewController()
+        let selectedTask = todoList[indexPath.row]
+        editTaskVC.todoListInstance = selectedTask
+        navigationController?.present(editTaskVC, animated: true)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, performAction action: Selector, forItemAt indexPath: IndexPath, withSender sender: Any?) {
+        let todoDelete = filteredTasks[indexPath.row]
+        filteredTasks.remove(at: indexPath.row)
+        collectionView.deleteItems(at: [indexPath])
+        deleteTaskFromCoreData(todoItem: todoDelete)
     }
 }
 
+//MARK: - CollectionView DlegateFlowLayout
 extension MainViewController: UICollectionViewDelegateFlowLayout {
-    func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        collectionView.reloadData()
+    func controllerDidChangeContent(_ viewController: NSFetchedResultsController<NSFetchRequestResult>) {
         updateTabs()
         updateDataForSelectedTab()
     }
 }
 
-
+//MARK: - Setup Loyout
 private extension MainViewController {
     private func setupLayout() {
         prepareView()
@@ -328,7 +388,7 @@ private extension MainViewController {
         }
         buttonNewTask.snp.makeConstraints { make in
             make.top.equalTo(view.snp.top).inset(80)
-            make.right.equalTo(view.snp.right).inset(30)
+            make.right.equalTo(view.snp.right).inset(20)
             make.height.equalTo(46)
             make.width.equalTo(145)
         }
@@ -336,7 +396,6 @@ private extension MainViewController {
             make.top.equalTo(labelTask.snp.top).inset(42)
             make.left.equalTo(view.snp.left).inset(32)
             make.height.equalTo(20)
-//            make.width.equalTo(180)
         }
         tabsStackView.snp.makeConstraints { make in
             make.top.equalTo(labelData.snp.top).offset(30)

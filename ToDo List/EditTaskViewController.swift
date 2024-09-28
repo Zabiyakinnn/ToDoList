@@ -1,17 +1,18 @@
 //
-//  NewTaskViewController.swift
+//  EditTaskViewController.swift
 //  ToDo List
 //
-//  Created by Дмитрий Забиякин on 14.09.2024.
+//  Created by Дмитрий Забиякин on 28.09.2024.
 //
 
 import UIKit
 import SnapKit
 
-class NewTaskViewController: UIViewController {
+final class EditTaskViewController: UIViewController {
     
+    var todo: String?
+    var comment: String?
     var todoListInstance: ToDoList?
-    var newToDo: (() -> Void)?
     
     private lazy var todoTextField: UITextField = {
         let textField = UITextField()
@@ -19,7 +20,7 @@ class NewTaskViewController: UIViewController {
         textField.backgroundColor = UIColor(red: 230/255, green: 240/255, blue: 255/255, alpha: 1)
         textField.textColor = .black
         textField.tintColor = .black
-        textField.placeholder = "Enter the task"
+        textField.text = todoListInstance?.todo
         textField.layer.shadowColor = UIColor.lightGray.cgColor //цвет тени
         textField.layer.shadowOffset = CGSize(width: 0, height: 2)  //смещение тени
         textField.layer.shadowRadius = 4  // радиус размытия тени
@@ -34,7 +35,7 @@ class NewTaskViewController: UIViewController {
         textField.backgroundColor = UIColor(red: 230/255, green: 240/255, blue: 255/255, alpha: 1)
         textField.textColor = .black
         textField.tintColor = .black
-        textField.placeholder = "Enter the comment"
+        textField.text = todoListInstance?.comment
         textField.layer.shadowColor = UIColor.lightGray.cgColor //цвет тени
         textField.layer.shadowOffset = CGSize(width: 0, height: 2)  //смещение тени
         textField.layer.shadowRadius = 4  // радиус размытия тени
@@ -76,7 +77,7 @@ class NewTaskViewController: UIViewController {
         let label = UILabel()
         label.textColor = .black
         label.font = UIFont.systemFont(ofSize: 22, weight: .semibold)
-        label.text = "Create a new task.."
+        label.text = "Edit task.."
         label.textAlignment = .left
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -90,17 +91,19 @@ class NewTaskViewController: UIViewController {
         button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
         button.backgroundColor = UIColor(red: 230/255, green: 240/255, blue: 255/255, alpha: 1)
         button.layer.cornerRadius = 14
-        button.addTarget(self, action: #selector(saveToDoList), for: .touchUpInside)
+        button.addTarget(self, action: #selector(saveEditTask), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "New Task"
+        title = "Edit Task"
         view.backgroundColor = UIColor(red: 249/255, green: 249/255, blue: 249/255, alpha: 1.0)
         setupView()
         setupeConstraint()
+        setRightButtonComment()
+        setRightButtonToDo()
     }
     
     private func setupView() {
@@ -113,6 +116,46 @@ class NewTaskViewController: UIViewController {
         view.addSubview(setDateOfDone)
     }
     
+//    clear textField
+    private func setRightButtonToDo() {
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+        button.tintColor = .gray
+        button.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+        button.addTarget(self, action: #selector(clearTextFieldToDo), for: .touchUpInside)
+        
+        let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+        containerView.addSubview(button)
+        
+        button.center = containerView.center
+        todoTextField.rightView = containerView
+        todoTextField.rightViewMode = .always
+    }
+    
+    @objc private func clearTextFieldToDo() {
+        todoTextField.text = nil
+    }
+    
+    private func setRightButtonComment() {
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
+        button.tintColor = .gray
+        button.frame = CGRect(x: 0, y: 0, width: 30, height: 30)
+        button.addTarget(self, action: #selector(clearTextFieldComment), for: .touchUpInside)
+        
+        let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+        containerView.addSubview(button)
+        
+        button.center = containerView.center
+        commentTextField.rightView = containerView
+        commentTextField.rightViewMode = .always
+    }
+    
+    @objc private func clearTextFieldComment() {
+        commentTextField.text = nil
+    }
+    
+//    Data picker
     @objc func setDateOfTask() {
         let vc = UIViewController()
         vc.preferredContentSize = CGSize(width: 250,height: 50)
@@ -137,42 +180,39 @@ class NewTaskViewController: UIViewController {
         dateOfDone.text = selectedDate
     }
     
-    @objc func saveToDoList() {
+    @objc private func saveEditTask() {
         if todoTextField.hasText && commentTextField.hasText && dateOfDone.text != "dd-MM-yyyy" {
             let formatter = DateFormatter()
             formatter.dateFormat = "dd-MM-yyyy"
-
-            // Проверяем, если todoListInstance == nil, создаем новый объект
-            // Получаем контекст ManagedObjectContext
+            
             let appDelegate = UIApplication.shared.delegate as! AppDelegate
             let context = appDelegate.persistentContainer.viewContext
-                
-            // Создаем новый объект ToDoList
-            if todoListInstance == nil {
-                todoListInstance = ToDoList(context: context)
+            
+//            проверяем существует ли уже todoListInstance
+            if let todoEdit = todoListInstance {
+                print("редактирую задачу: \(todoEdit)")
+//                редактируем ToDoList
+                todoEdit.todo = todoTextField.text
+                todoEdit.comment = commentTextField.text
+                todoEdit.date = formatter.date(from: dateOfDone.text  ?? "01-01-2024")
+                todoEdit.completed = todoListInstance?.completed != nil
+            } else {
+                print("ошибка: todoListInstance = nil")
             }
-            
-            todoListInstance?.todo = todoTextField.text
-            todoListInstance?.comment = commentTextField.text
-            todoListInstance?.date = formatter.date(from: dateOfDone.text ?? "01-01-2024")
-            todoListInstance?.completed = false
-            
-            // Сохраняем данные в Core Data
+//            перезаписываем данные в CoreData
             do {
                 try context.save()
-                self.newToDo?()
                 dismiss(animated: true)
-//                print("Данные сохранены в coreData ----- \(String(describing: todoListInstance))")
             } catch {
-                print("Ошибка при сохранении данных в Core Data: \(error)")
+                print("Ошибка при обновлении данных в Core Data: - \(error)")
             }
         } else {
-            print("Ошибка сохранения задачи в CoreData")
+            print("Не удалось найти задачу для редактирования")
         }
     }
 }
 
-extension NewTaskViewController {
+extension EditTaskViewController {
     private func setupeConstraint() {
         labelTask.snp.makeConstraints { make in
             make.top.equalTo(view.snp.top).inset(37)
