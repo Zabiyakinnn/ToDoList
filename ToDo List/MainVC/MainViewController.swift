@@ -261,6 +261,7 @@ class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
         tabsStackView.addArrangedSubview(openTab)
         tabsStackView.addArrangedSubview(closedTab)
     }
+    
     //    обработка нажатий на вкладку
     @objc private func tabTapped(_ sender: UITapGestureRecognizer) {
         guard let tappedView = sender.view else { return }
@@ -372,6 +373,7 @@ extension MainViewController: UICollectionViewDelegateFlowLayout {
 private extension MainViewController {
     private func setupLayout() {
         prepareView()
+        setupConstraint()
     }
     
     func prepareView() {
@@ -380,6 +382,8 @@ private extension MainViewController {
         view.addSubview(labelData)
         view.addSubview(tabsStackView)
         view.addSubview(collectionView)
+    }
+    private func setupConstraint() {
         labelTask.snp.makeConstraints { make in
             make.top.equalTo(view.snp.top).inset(66)
             make.left.equalTo(view.snp.left).inset(30)
@@ -387,9 +391,9 @@ private extension MainViewController {
             make.width.equalTo(150)
         }
         buttonNewTask.snp.makeConstraints { make in
-            make.top.equalTo(view.snp.top).inset(80)
+            make.top.equalTo(view.snp.top).inset(76)
             make.right.equalTo(view.snp.right).inset(20)
-            make.height.equalTo(46)
+            make.height.equalTo(43)
             make.width.equalTo(145)
         }
         labelData.snp.makeConstraints { make in

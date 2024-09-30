@@ -21,6 +21,7 @@ final class EditTaskViewController: UIViewController {
         textField.textColor = .black
         textField.tintColor = .black
         textField.text = todoListInstance?.todo
+        textField.placeholder = "Enter the task"
         textField.layer.shadowColor = UIColor.lightGray.cgColor //цвет тени
         textField.layer.shadowOffset = CGSize(width: 0, height: 2)  //смещение тени
         textField.layer.shadowRadius = 4  // радиус размытия тени
@@ -36,6 +37,7 @@ final class EditTaskViewController: UIViewController {
         textField.textColor = .black
         textField.tintColor = .black
         textField.text = todoListInstance?.comment
+        textField.placeholder = "Enter the comment"
         textField.layer.shadowColor = UIColor.lightGray.cgColor //цвет тени
         textField.layer.shadowOffset = CGSize(width: 0, height: 2)  //смещение тени
         textField.layer.shadowRadius = 4  // радиус размытия тени
@@ -102,8 +104,6 @@ final class EditTaskViewController: UIViewController {
         view.backgroundColor = UIColor(red: 249/255, green: 249/255, blue: 249/255, alpha: 1.0)
         setupView()
         setupeConstraint()
-        setRightButtonComment()
-        setRightButtonToDo()
     }
     
     private func setupView() {
@@ -114,6 +114,13 @@ final class EditTaskViewController: UIViewController {
         view.addSubview(dateOfDone)
         view.addSubview(taskCompletionDate)
         view.addSubview(setDateOfDone)
+        
+        self.hideKeybord()
+        
+        setRightButtonComment()
+        setRightButtonToDo()
+        setLeftImageToDo()
+        setLeftImageComment()
     }
     
 //    clear textField
@@ -155,6 +162,37 @@ final class EditTaskViewController: UIViewController {
         commentTextField.text = nil
     }
     
+//    Left image TextField
+    private func setLeftImageToDo() {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "doc.text")
+        imageView.contentMode = .scaleAspectFit
+        imageView.frame = CGRect(x: 7, y: 0, width: 16, height: 20)
+        imageView.tintColor = .gray
+        
+        let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 25, height: 25))
+        containerView.addSubview(imageView)
+        
+        imageView.center = containerView.center
+        todoTextField.leftView = containerView
+        todoTextField.leftViewMode = .always
+    }
+
+    private func setLeftImageComment() {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "rays")
+        imageView.contentMode = .scaleAspectFit
+        imageView.frame = CGRect(x: 7, y: 0, width: 16, height: 20)
+        imageView.tintColor = .gray
+        
+        let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 25, height: 25))
+        containerView.addSubview(imageView)
+        
+        imageView.center = containerView.center
+        commentTextField.leftView = containerView
+        commentTextField.leftViewMode = .always
+    }
+    
 //    Data picker
     @objc func setDateOfTask() {
         let vc = UIViewController()
@@ -186,8 +224,7 @@ final class EditTaskViewController: UIViewController {
             formatter.dateFormat = "dd-MM-yyyy"
             
             let appDelegate = UIApplication.shared.delegate as! AppDelegate
-            let context = appDelegate.persistentContainer.viewContext
-            
+            let context = appDelegate.persistentContainer.viewContext            
 //            проверяем существует ли уже todoListInstance
             if let todoEdit = todoListInstance {
                 print("редактирую задачу: \(todoEdit)")
@@ -199,7 +236,6 @@ final class EditTaskViewController: UIViewController {
             } else {
                 print("ошибка: todoListInstance = nil")
             }
-//            перезаписываем данные в CoreData
             do {
                 try context.save()
                 dismiss(animated: true)
@@ -207,7 +243,9 @@ final class EditTaskViewController: UIViewController {
                 print("Ошибка при обновлении данных в Core Data: - \(error)")
             }
         } else {
-            print("Не удалось найти задачу для редактирования")
+            let errorAlert = UIAlertController(title: "Error", message: "Fill in the fields", preferredStyle: .alert)
+            errorAlert.addAction(UIAlertAction(title: "Ok", style: .default))
+            present(errorAlert, animated: true)
         }
     }
 }
@@ -252,5 +290,17 @@ extension EditTaskViewController {
             make.width.equalTo(124)
             make.height.equalTo(30)
         }
+    }
+    
+    private func hideKeybord() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(tapScreen(_:)))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+    }
+    
+    //    обработка нажатия и скрытия клавиатуры
+    @objc private func tapScreen(_ sender: UITapGestureRecognizer) {
+        todoTextField.endEditing(true)
+        commentTextField.endEditing(true)
     }
 }

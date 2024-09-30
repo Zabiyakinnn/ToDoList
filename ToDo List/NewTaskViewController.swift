@@ -111,6 +111,11 @@ class NewTaskViewController: UIViewController {
         view.addSubview(dateOfDone)
         view.addSubview(taskCompletionDate)
         view.addSubview(setDateOfDone)
+        
+        self.hideKeybord()
+        
+        setLeftImageToDo()
+        setLeftImageComment()
     }
     
     @objc func setDateOfTask() {
@@ -167,8 +172,41 @@ class NewTaskViewController: UIViewController {
                 print("Ошибка при сохранении данных в Core Data: \(error)")
             }
         } else {
-            print("Ошибка сохранения задачи в CoreData")
+            let errorAlert = UIAlertController(title: "Error", message: "Fill in the fields", preferredStyle: .alert)
+            errorAlert.addAction(UIAlertAction(title: "Ok", style: .default))
+            present(errorAlert, animated: true)
         }
+    }
+    
+    //    Left image TextField
+    private func setLeftImageToDo() {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "doc.text")
+        imageView.contentMode = .scaleAspectFit
+        imageView.frame = CGRect(x: 7, y: 0, width: 16, height: 20)
+        imageView.tintColor = .gray
+        
+        let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 25, height: 25))
+        containerView.addSubview(imageView)
+        
+        imageView.center = containerView.center
+        todoTextField.leftView = containerView
+        todoTextField.leftViewMode = .always
+    }
+    
+    private func setLeftImageComment() {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "rays")
+        imageView.contentMode = .scaleAspectFit
+        imageView.frame = CGRect(x: 7, y: 0, width: 16, height: 20)
+        imageView.tintColor = .gray
+        
+        let containerView = UIView(frame: CGRect(x: 0, y: 0, width: 25, height: 25))
+        containerView.addSubview(imageView)
+        
+        imageView.center = containerView.center
+        commentTextField.leftView = containerView
+        commentTextField.leftViewMode = .always
     }
 }
 
@@ -212,5 +250,17 @@ extension NewTaskViewController {
             make.width.equalTo(124)
             make.height.equalTo(30)
         }
+    }
+    
+    private func hideKeybord() {
+        let tap = UITapGestureRecognizer(target: self, action: #selector(tapScreen(_:)))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+    }
+    
+    //    обработка нажатия и скрытия клавиатуры
+    @objc private func tapScreen(_ sender: UITapGestureRecognizer) {
+        todoTextField.endEditing(true)
+        commentTextField.endEditing(true)
     }
 }

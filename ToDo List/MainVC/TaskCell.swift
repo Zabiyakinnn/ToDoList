@@ -99,6 +99,7 @@ class TaskCell: UICollectionViewCell, UIGestureRecognizerDelegate {
         statusButton.isSelected.toggle()
         onStatusChange?(statusButton.isSelected)
     }
+
     
     //    MARK: - Other functions here
     func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
