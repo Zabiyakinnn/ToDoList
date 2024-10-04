@@ -121,7 +121,7 @@ extension TaskCell {
         commentLabel.snp.makeConstraints { make in
             make.left.equalTo(contentView.snp.left).offset(10)
             make.top.equalTo(toDoLabel.snp.top).offset(40)
-            make.width.equalTo(180)
+            make.right.equalTo(contentView.snp.right).offset(-30)
         }
         createdToDoLabel.snp.makeConstraints { make in
             make.left.equalTo(contentView.snp.left).offset(10)
