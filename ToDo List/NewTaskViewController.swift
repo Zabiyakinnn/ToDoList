@@ -10,8 +10,32 @@ import SnapKit
 
 class NewTaskViewController: UIViewController {
     
+    
     var todoListInstance: ToDoList?
     var newToDo: (() -> Void)?
+    private var dateOfDone = String()
+    private var selectedDate: Date?
+    private var calendar = UICalendarView()
+    private func showFields() {
+        NotificationUtils.showFields(on: self)
+    }
+    
+    private var buttonDate: UIButton = {
+        let button = UIButton(type: .system)
+        button.tintColor = .black
+        let calendarImage = UIImage(systemName: "calendar")?.withTintColor(.black, renderingMode: .alwaysOriginal)
+        button.setImage(calendarImage, for: .normal)
+        button.backgroundColor = UIColor(red: 230/255, green: 240/255, blue: 255/255, alpha: 1)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .regular)
+        button.setTitle("Date", for: .normal)
+        button.contentHorizontalAlignment = .left
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: 28, bottom: 0, right: 0)
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 14, bottom: 0, right: 0)
+        button.layer.cornerRadius = 8
+        button.addTarget(self, action: #selector(setDateOfTask), for: .touchUpInside)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
     
     private lazy var todoTextField: UITextField = {
         let textField = UITextField()
@@ -41,25 +65,6 @@ class NewTaskViewController: UIViewController {
         textField.layer.shadowOpacity = 0.4 // прозрачность тени
         textField.layer.masksToBounds = false
         return textField
-    }()
-    
-    private lazy var dateOfDone: UILabel = {
-        let label = UILabel()
-        label.text = "dd-MM-yyyy"
-        label.textAlignment = .center
-        return label
-    }()
-    
-    private lazy var setDateOfDone: UIButton = {
-        let button = UIButton(type: .system)
-        button.tintColor = .systemBlue
-        button.setTitle("To choose", for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
-        button.backgroundColor = UIColor(red: 230/255, green: 240/255, blue: 255/255, alpha: 1)
-        button.layer.cornerRadius = 14
-        button.addTarget(self, action: #selector(setDateOfTask), for: .touchUpInside)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
     }()
     
     private lazy var taskCompletionDate: UILabel = {
@@ -108,9 +113,9 @@ class NewTaskViewController: UIViewController {
         view.addSubview(todoTextField)
         view.addSubview(commentTextField)
         view.addSubview(buttonSaveTask)
-        view.addSubview(dateOfDone)
         view.addSubview(taskCompletionDate)
-        view.addSubview(setDateOfDone)
+        
+        view.addSubview(buttonDate)
         
         self.hideKeybord()
         
@@ -119,31 +124,30 @@ class NewTaskViewController: UIViewController {
     }
     
     @objc func setDateOfTask() {
-        let vc = UIViewController()
-        vc.preferredContentSize = CGSize(width: 250,height: 50)
-        let pickerView = UIDatePicker(frame: CGRect(x: 0, y: 0, width: 250, height: 50))
-        pickerView.datePickerMode = .date
-        vc.view.addSubview(pickerView)
-        pickerView.snp.makeConstraints { make in
-            make.center.equalTo(vc.view.snp.center)
+        calendar.calendar = .current
+        calendar.locale = .current
+        view.addSubview(calendar)
+        
+        let selection = UICalendarSelectionSingleDate(delegate: self)
+        calendar.selectionBehavior = selection
+        
+        calendar.snp.makeConstraints { make in
+            make.top.equalTo(350)
+            make.left.equalTo(30)
+            make.right.equalTo(-30)
         }
-        pickerView.addTarget(self, action: #selector(updateDateOfToDo(sender: )), for: .valueChanged)
-        let DateAlert = UIAlertController(title: "Select the date of completion of the task", message: "", preferredStyle: .alert)
-        DateAlert.setValue(vc, forKey: "contentViewController")
-        DateAlert.addAction(UIAlertAction(title: "Done", style: .default, handler: nil))
-        updateDateOfToDo(sender: pickerView)
-        present(DateAlert, animated: true)
     }
     
     @objc func updateDateOfToDo(sender: UIDatePicker) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "dd-MM-yyyy"
         let selectedDate = dateFormatter.string(from: sender.date)
-        dateOfDone.text = selectedDate
+        dateOfDone = selectedDate
+        dismiss(animated: true, completion: nil)
     }
     
     @objc func saveToDoList() {
-        if todoTextField.hasText && commentTextField.hasText && dateOfDone.text != "dd-MM-yyyy" {
+        if todoTextField.hasText && commentTextField.hasText && dateOfDone != "dd-MM-yyyy" {
             let formatter = DateFormatter()
             formatter.dateFormat = "dd-MM-yyyy"
 
@@ -159,7 +163,7 @@ class NewTaskViewController: UIViewController {
             
             todoListInstance?.todo = todoTextField.text
             todoListInstance?.comment = commentTextField.text
-            todoListInstance?.date = formatter.date(from: dateOfDone.text ?? "01-01-2024")
+            todoListInstance?.date = formatter.date(from: dateOfDone)
             todoListInstance?.completed = false
             
             // Сохраняем данные в Core Data
@@ -172,9 +176,7 @@ class NewTaskViewController: UIViewController {
                 print("Ошибка при сохранении данных в Core Data: \(error)")
             }
         } else {
-            let errorAlert = UIAlertController(title: "Error", message: "Fill in the fields", preferredStyle: .alert)
-            errorAlert.addAction(UIAlertAction(title: "Ok", style: .default))
-            present(errorAlert, animated: true)
+            showFields()
         }
     }
     
@@ -213,7 +215,7 @@ class NewTaskViewController: UIViewController {
 extension NewTaskViewController {
     private func setupeConstraint() {
         labelTask.snp.makeConstraints { make in
-            make.top.equalTo(view.snp.top).inset(37)
+            make.top.equalTo(view.snp.top).inset(51)
             make.left.equalTo(view.snp.left).inset(22)
             make.height.equalTo(34)
             make.width.equalTo(220)
@@ -222,33 +224,32 @@ extension NewTaskViewController {
             make.centerX.equalTo(view.snp.centerX)
             make.top.equalTo(labelTask.snp.top).offset(64)
             make.height.equalTo(55)
-            make.width.equalToSuperview()
+            make.left.equalTo(8)
+            make.right.equalTo(-8)
         }
         commentTextField.snp.makeConstraints { make in
             make.centerX.equalTo(view.snp.centerX)
             make.top.equalTo(todoTextField.snp.top).offset(66)
             make.height.equalTo(55)
-            make.width.equalToSuperview()
+            make.left.equalTo(8)
+            make.right.equalTo(-8)
         }
         buttonSaveTask.snp.makeConstraints { make in
-            make.top.equalTo(view.snp.top).inset(35)
+            make.top.equalTo(view.snp.top).inset(48)
             make.right.equalTo(view.snp.right).inset(24)
             make.height.equalTo(40)
             make.width.equalTo(135)
         }
-        dateOfDone.snp.makeConstraints { make in
-            make.top.equalTo(commentTextField.snp.top).offset(120)
-            make.left.equalTo(view.snp.left).inset(30)
-        }
         taskCompletionDate.snp.makeConstraints { make in
             make.left.equalTo(view.snp.left).inset(34)
-            make.top.equalTo(commentTextField.snp.top).offset(78)
+            make.top.equalTo(commentTextField.snp.top).offset(84)
         }
-        setDateOfDone.snp.makeConstraints { make in
-            make.left.equalTo(dateOfDone.snp.left).offset(155)
-            make.top.equalTo(commentTextField.snp.top).offset(114)
-            make.width.equalTo(124)
-            make.height.equalTo(30)
+        buttonDate.snp.makeConstraints { make in
+            make.top.equalTo(taskCompletionDate.snp.top).inset(35)
+            make.centerX.equalToSuperview()
+            make.height.equalTo(44)
+            make.left.equalTo(14)
+            make.right.equalTo(-14)
         }
     }
     
@@ -262,5 +263,21 @@ extension NewTaskViewController {
     @objc private func tapScreen(_ sender: UITapGestureRecognizer) {
         todoTextField.endEditing(true)
         commentTextField.endEditing(true)
+    }
+}
+
+extension NewTaskViewController: UICalendarSelectionSingleDateDelegate {
+    
+    func dateSelection(_ selection: UICalendarSelectionSingleDate, didSelectDate dateComponents: DateComponents?) {
+        guard let dateComponents = dateComponents, let date = dateComponents.date else { return }
+        
+        selectedDate = date
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd-MM-yyyy"
+        let selectedDate = dateFormatter.string(from: date)
+        dateOfDone = selectedDate
+        
+        buttonDate.setTitle(selectedDate, for: .normal)
+        calendar.removeFromSuperview()
     }
 }

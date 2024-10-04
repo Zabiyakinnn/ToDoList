@@ -48,45 +48,6 @@ class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
         return container
     }()
     
-    private func deleteTaskFromCoreData(todoItem: Todos) {
-        let context = persistentContainer.viewContext
-        let fetchRequest: NSFetchRequest<ToDoList> = ToDoList.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "todo == %@", todoItem.todo ?? "")
-        
-        do {
-            let results = try context.fetch(fetchRequest)
-            if let taskToDelete = results.first {
-                context.delete(taskToDelete)
-                try context.save()
-            }
-        } catch {
-            print("Ошибка при удалении задачи из Core Data: \(error)")
-        }
-    }
-    
-    private func updateTaskStatus(at indexPath: IndexPath, newStatus: Bool) {
-        var
-        task = filteredTasks[indexPath.row]
-        task.completed = newStatus
-        
-        let context = persistentContainer.viewContext
-        let fetchRequest: NSFetchRequest<ToDoList> = ToDoList.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "todo == %@", task.todo ?? "")
-        
-        do {
-            let result = try context.fetch(fetchRequest)
-            if let taskToUpdate = result.first {
-                taskToUpdate.completed = newStatus
-                try context.save()
-                print("Статус задачи обновлен и сохранен в CoreData")
-            }
-        } catch {
-            print("Ошибка сохранения статуса в CoreData \(error)")
-        }
-        collectionView.reloadItems(at: [indexPath])
-    }
-    
-    
     //    MARK: - View
     private lazy var seperatorLine: UIView = {
         let view = UIView()
@@ -185,32 +146,6 @@ class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
     }
     
     //    MARK: - Methods
-    //    Сохранение данных в Core Data
-    private func saveTodosToCoreData(todos: [Todos]) {
-        let context = persistentContainer.viewContext
-        
-        for todoItem in todos {
-            let fetchRequest: NSFetchRequest<ToDoList> = ToDoList.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "todo == %@", todoItem.todo ?? "")
-            
-            do {
-                let results = try context.fetch(fetchRequest)
-                if results.isEmpty {
-                    //                    если задачи не существует в Core Data создаем новую запись
-                    let newTask = ToDoList(context: context)
-                    newTask.todo = todoItem.todo
-                    newTask.comment = todoItem.comment
-                    newTask.date = todoItem.date
-                    newTask.completed = todoItem.completed ?? false
-                    
-                    try context.save()
-                }
-            } catch {
-                print("Ошибка сохранения в Core Data \(error)")
-            }
-        }
-    }
-    
     //    метод сооздания вкладок
     func createTab(title: String, count: Int, isSelected: Bool) -> UIView {
         let tabView = UIStackView()
@@ -314,6 +249,46 @@ class MainViewController: UIViewController, NSFetchedResultsControllerDelegate {
             break
         }
         collectionView.reloadData()
+    }
+    
+//    удаление задачи из Core Data
+    private func deleteTaskFromCoreData(todoItem: Todos) {
+        let context = persistentContainer.viewContext
+        let fetchRequest: NSFetchRequest<ToDoList> = ToDoList.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "todo == %@", todoItem.todo ?? "")
+        
+        do {
+            let results = try context.fetch(fetchRequest)
+            if let taskToDelete = results.first {
+                context.delete(taskToDelete)
+                try context.save()
+            }
+        } catch {
+            print("Ошибка при удалении задачи из Core Data: \(error)")
+        }
+    }
+    
+//    изменение статуса задачи (выполненно/не выполненно)
+    private func updateTaskStatus(at indexPath: IndexPath, newStatus: Bool) {
+        
+        var task = filteredTasks[indexPath.row]
+        task.completed = newStatus
+        
+        let context = persistentContainer.viewContext
+        let fetchRequest: NSFetchRequest<ToDoList> = ToDoList.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "todo == %@", task.todo ?? "")
+        
+        do {
+            let result = try context.fetch(fetchRequest)
+            if let taskToUpdate = result.first {
+                taskToUpdate.completed = newStatus
+                try context.save()
+                print("Статус задачи обновлен и сохранен в CoreData")
+            }
+        } catch {
+            print("Ошибка сохранения статуса в CoreData \(error)")
+        }
+        collectionView.reloadItems(at: [indexPath])
     }
     
     @objc func tappedNewTask() {
